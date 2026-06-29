@@ -1,11 +1,11 @@
 package com.gym.infrastructure.persistence.entity;
 
-
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,12 +23,12 @@ public class UserEntity {
     private String password;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    private boolean isActive;
 
     protected UserEntity() {}
 
     public UserEntity(String firstName, String lastName, String username,
-                      String password, Boolean isActive) {
+                      String password, boolean isActive) {
         this.firstName = firstName;
         this.lastName  = lastName;
         this.username  = username;
@@ -41,11 +41,11 @@ public class UserEntity {
     public String getLastName()  { return lastName; }
     public String getUsername()  { return username; }
     public String getPassword()  { return password; }
-    public Boolean getIsActive() { return isActive; }
+    public boolean isActive()    { return isActive; }
 
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public void setLastName(String lastName)   { this.lastName = lastName; }
     public void setUsername(String username)   { this.username = username; }
     public void setPassword(String password)   { this.password = password; }
-    public void setIsActive(Boolean isActive)  { this.isActive = isActive; }
+    public void setActive(boolean active)      { this.isActive = active; }
 }
