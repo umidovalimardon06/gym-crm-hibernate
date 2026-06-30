@@ -12,7 +12,7 @@ public class UsernameGenerator {
     }
 
     public String generate(String firstName, String lastName) {
-        String base = firstName + "." + lastName;
+        String base = firstName.toLowerCase() + "." + lastName.toLowerCase();
 
         if (!usernameRepository.existsByUsername(base)) {
             return base;
