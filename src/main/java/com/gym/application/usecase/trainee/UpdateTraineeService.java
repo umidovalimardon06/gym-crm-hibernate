@@ -1,6 +1,8 @@
 package com.gym.application.usecase.trainee;
 
 import com.gym.application.exception.NotFoundException;
+import com.gym.application.port.input.auth.AuthCredentials;
+import com.gym.application.port.input.auth.AuthenticateUseCase;
 import com.gym.application.port.input.trainee.update.UpdateTraineeUseCase;
 import com.gym.application.port.output.TraineeRepository;
 import com.gym.domain.Trainee;
@@ -10,19 +12,24 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UpdateTraineeService implements UpdateTraineeUseCase {
 
+    private final AuthenticateUseCase authenticator;
     private final TraineeRepository traineeRepository;
 
-    public UpdateTraineeService(TraineeRepository traineeRepository) {
+    public UpdateTraineeService(AuthenticateUseCase authenticator,
+                                TraineeRepository traineeRepository) {
+        this.authenticator = authenticator;
         this.traineeRepository = traineeRepository;
     }
 
     @Override
     @Transactional
-    public Trainee updateTraineeProfile(String username, Trainee updated) {
-        validate(username, updated);
+    public Trainee updateTraineeProfile(AuthCredentials auth, Trainee updated) {
+        validate(auth, updated);
+        authenticator.authenticate(auth);
 
-        Trainee existing = traineeRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundException("Trainee not found: " + username));
+        Trainee existing = traineeRepository.findByUsername(auth.username())
+                .orElseThrow(() -> new NotFoundException(
+                        "Trainee not found: " + auth.username()));
 
         applyChanges(existing, updated);
         return traineeRepository.save(existing);
@@ -40,9 +47,9 @@ public class UpdateTraineeService implements UpdateTraineeUseCase {
         target.setActive(source.isActive());
     }
 
-    private void validate(String username, Trainee updated) {
-        if (username == null || username.isBlank())
-            throw new IllegalArgumentException("username is required");
+    private void validate(AuthCredentials auth, Trainee updated) {
+        if (auth == null)
+            throw new IllegalArgumentException("auth is required");
         if (updated == null)
             throw new IllegalArgumentException("updated is required");
     }
