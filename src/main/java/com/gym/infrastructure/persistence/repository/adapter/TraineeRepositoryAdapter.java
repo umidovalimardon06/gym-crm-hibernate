@@ -2,6 +2,8 @@ package com.gym.infrastructure.persistence.repository.adapter;
 
 import com.gym.application.port.output.TraineeRepository;
 import com.gym.domain.Trainee;
+import com.gym.infrastructure.persistence.entity.TraineeEntity;
+import com.gym.infrastructure.persistence.entity.UserEntity;
 import com.gym.infrastructure.persistence.mapper.TraineeMapper;
 import com.gym.infrastructure.persistence.repository.jpa.TraineeJpaRepository;
 import org.springframework.stereotype.Repository;
@@ -22,8 +24,27 @@ public class TraineeRepositoryAdapter implements TraineeRepository {
     }
 
     @Override
+    @Transactional
     public Trainee save(Trainee trainee) {
-        return mapper.toDomain(jpa.save(mapper.toEntity(trainee)));
+        if (trainee.getUserId() == null) {
+            return mapper.toDomain(jpa.save(mapper.toEntity(trainee)));
+        }
+
+        TraineeEntity existing = jpa.findByUser_Id(trainee.getUserId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Trainee not found for update: userId=" + trainee.getUserId()));
+
+        UserEntity user = existing.getUser();
+        user.setFirstName(trainee.getFirstName());
+        user.setLastName(trainee.getLastName());
+        user.setUsername(trainee.getUsername());
+        user.setPassword(trainee.getPassword());
+        user.setActive(trainee.isActive());
+
+        existing.setDateOfBirth(trainee.getDateOfBirth());
+        existing.setAddress(trainee.getAddress());
+
+        return mapper.toDomain(jpa.save(existing));
     }
 
     @Override

@@ -2,9 +2,12 @@ package com.gym.infrastructure.persistence.repository.adapter;
 
 import com.gym.application.port.output.TrainerRepository;
 import com.gym.domain.Trainer;
+import com.gym.infrastructure.persistence.entity.TrainerEntity;
+import com.gym.infrastructure.persistence.entity.UserEntity;
 import com.gym.infrastructure.persistence.mapper.TrainerMapper;
 import com.gym.infrastructure.persistence.repository.jpa.TrainerJpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,8 +24,26 @@ public class TrainerRepositoryAdapter implements TrainerRepository {
     }
 
     @Override
+    @Transactional
     public Trainer save(Trainer trainer) {
-        return mapper.toDomain(jpa.save(mapper.toEntity(trainer)));
+        if (trainer.getUserId() == null) {
+            return mapper.toDomain(jpa.save(mapper.toEntity(trainer)));
+        }
+
+        TrainerEntity existing = jpa.findByUser_Id(trainer.getUserId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Trainer not found for update: userId=" + trainer.getUserId()));
+
+        UserEntity user = existing.getUser();
+        user.setFirstName(trainer.getFirstName());
+        user.setLastName(trainer.getLastName());
+        user.setUsername(trainer.getUsername());
+        user.setPassword(trainer.getPassword());
+        user.setActive(trainer.isActive());
+
+        existing.setSpecialization(trainer.getSpecialization());
+
+        return mapper.toDomain(jpa.save(existing));
     }
 
     @Override

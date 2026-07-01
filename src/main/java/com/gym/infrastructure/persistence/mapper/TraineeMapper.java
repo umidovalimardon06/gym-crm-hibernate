@@ -26,7 +26,7 @@ public class TraineeMapper {
         t.setTrainerIds(
                 e.getTrainers() == null ? new HashSet<>() :
                         e.getTrainers().stream()
-                                .map(TrainerEntity::getId)
+                                .map(tr -> tr.getUser().getId())
                                 .collect(Collectors.toSet())
         );
         return t;
