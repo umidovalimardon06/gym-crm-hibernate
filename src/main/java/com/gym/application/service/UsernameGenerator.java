@@ -1,25 +1,25 @@
 package com.gym.application.service;
 
-import com.gym.application.port.output.UsernameRepository;
+import com.gym.application.port.output.UserRepository;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UsernameGenerator {
-    private final UsernameRepository usernameRepository;
+    private final UserRepository userRepository;
 
-    public UsernameGenerator(UsernameRepository usernameRepository) {
-        this.usernameRepository = usernameRepository;
+    public UsernameGenerator(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public String generate(String firstName, String lastName) {
         String base = firstName.toLowerCase() + "." + lastName.toLowerCase();
 
-        if (!usernameRepository.existsByUsername(base)) {
+        if (!userRepository.existsByUsername(base)) {
             return base;
         }
 
         int suffix = 1;
-        while (usernameRepository.existsByUsername(base + suffix)) {
+        while (userRepository.existsByUsername(base + suffix)) {
             suffix++;
         }
         return base + suffix;
