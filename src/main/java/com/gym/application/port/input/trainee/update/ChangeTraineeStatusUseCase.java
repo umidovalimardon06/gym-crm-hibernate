@@ -1,8 +1,8 @@
 package com.gym.application.port.input.trainee.update;
 
-import com.gym.domain.Trainee;
+import com.gym.application.port.input.auth.AuthCredentials;
 
 public interface ChangeTraineeStatusUseCase {
-    void activate(Trainee trainee);
-    void deactivate(Trainee trainee);
+    void activate(AuthCredentials auth);
+    void deactivate(AuthCredentials auth);
 }
