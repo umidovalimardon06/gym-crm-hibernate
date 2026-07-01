@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @Service
 public class AuthenticationService implements AuthenticateUseCase {
-
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
 
@@ -24,20 +23,29 @@ public class AuthenticationService implements AuthenticateUseCase {
 
     @Override
     public void authenticate(AuthCredentials credentials) {
-        if (credentials == null
-                || credentials.username() == null
-                || credentials.password() == null) {
-            throw new AuthenticationException("Invalid credentials");
+        User user = requireCredentials(credentials);
+        if (!user.isActive()) {
+            throw new AuthenticationException("Account is inactive");
         }
+    }
 
-        Optional<? extends User> user = traineeRepository
-                .findByUsername(credentials.username())
+    @Override
+    public void verifyCredentials(AuthCredentials credentials) {
+        requireCredentials(credentials);
+    }
+
+    private User requireCredentials(AuthCredentials c) {
+        if (c == null || c.username() == null || c.password() == null)
+            throw new AuthenticationException("Invalid credentials");
+
+        User user = traineeRepository.findByUsername(c.username())
                 .map(t -> (User) t)
-                .or(() -> trainerRepository.findByUsername(credentials.username()).map(t -> (User) t));
+                .or(() -> trainerRepository.findByUsername(c.username()).map(t -> (User) t))
+                .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
 
-        User found = user.orElseThrow(() -> new AuthenticationException("Invalid credentials"));
+        if (!user.getPassword().equals(c.password()))
+            throw new AuthenticationException("Invalid credentials");
 
-        if (!found.getPassword().equals(credentials.password())) throw new AuthenticationException("Invalid credentials");
-        if (!found.isActive()) throw new AuthenticationException("Account is inactive");
+        return user;
     }
 }
